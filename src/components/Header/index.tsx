@@ -2,17 +2,21 @@ import Link from "next/link";
 
 export default function Header(){
     return(
-        <header>
-            <Link href="/">Receitas Deliciosas</Link>
+        <header className="w-full bg-white text-black py-4">
+            <div className=" flex justify-between container mx-auto">
 
-            <nav>
-                <Link href="/">
-                    Inicio
-                </Link>
-                <Link href="/receitas">
-                    Receitas
-                </Link>
-            </nav>
+                <Link className="text-xl font-bold hover:scale-105 transition-all" href="/">Receitas Deliciosas</Link>
+
+                <nav className="flex gap-6">
+                    <Link className="hover:text-orange-500 transition-colors" href="/">
+                        Inicio
+                    </Link>
+                    <Link className="hover:text-orange-500 transition-colors" href="/receitas">
+                        Receitas
+                    </Link>
+                </nav>
+
+            </div>
         </header>
     )
 }
