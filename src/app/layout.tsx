@@ -23,6 +23,10 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
       >
         {children}
+<<<<<<< Updated upstream
+=======
+        <Footer />
+>>>>>>> Stashed changes
       </body>
     </html>
   );
