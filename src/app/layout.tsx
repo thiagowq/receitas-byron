@@ -26,10 +26,7 @@ export default function RootLayout({
       >
         <Header />
         {children}
-<<<<<<< Updated upstream
-=======
         <Footer />
->>>>>>> Stashed changes
       </body>
     </html>
   );
