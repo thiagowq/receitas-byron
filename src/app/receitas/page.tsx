@@ -1,5 +1,5 @@
 import RecipeCard from "@/components/ReceipeCard";
-import {recipes } from "@/lib/data"
+import { recipes } from "@/lib/data"
 
 export default function ReceitasPage() {
     return(
@@ -7,9 +7,9 @@ export default function ReceitasPage() {
             <div className="container mx-auto">
                 <h1 className="text-3xl font-bold">Todas as receitas</h1>
                 
-                <div className="grid grid-cols-3 gap-8 margin-top-">
+                <div className="grid grid-cols-3 gap-8 mt-8">
                     {recipes.map((recipe) => (
-                        <RecipeCard />)    
+                        <RecipeCard key={recipe.id} recipe={recipe}/>)    
                     )}
                 </div>
             </div>
