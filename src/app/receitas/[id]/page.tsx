@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { recipes } from "@/lib/data";
+import InfoPill from "@/components/InfoPill/inde";
 
 interface RecipePageProps{
     params: {
@@ -46,8 +47,11 @@ export default function ReceitaPage( {params}: RecipePageProps ) {
                         </div>
 
                         {/* Infos de preparo */}
-                        <div className="">
-                            {/* TODO: componentes de info*/}
+                        <div className="flex">
+                            <InfoPill title="Preparo" info={recipe.prepTime}/>
+                            <InfoPill title="Cozimento" info={recipe.cookTime}/>
+                            <InfoPill title="Porções" info={recipe.servings}/>
+                            <InfoPill title="Categoria" info={recipe.category}/>
                         </div>
 
                         <div>
