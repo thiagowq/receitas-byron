@@ -16,9 +16,9 @@ export default function Home() {
             </Link>
           </div> 
         </section>
+
+        {/* seção receitas em destaque */}
         <section>
-          {/* seção receitas em destaque */}
-        
           <div className="container mx-auto">
             <h2>Receitas em destaque</h2>
 
