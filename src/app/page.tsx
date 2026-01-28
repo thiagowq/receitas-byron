@@ -1,10 +1,11 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
   return (
     <main className="flex-grow">
 
-        {/* Seção Hero */}  
+        {/* seção hero */}  
         <section className="bg-orange-50 py-12">
           <div className="container mx-auto flex flex-col gap-6 items-center">
             <h1 className="text-5xl font-bold">Receitas Deliciosas</h1>
@@ -14,6 +15,20 @@ export default function Home() {
               Ver todas as receitas
             </Link>
           </div> 
+        </section>
+        <section>
+          {/* seção receitas em destaque */}
+        
+          <div className="container mx-auto">
+            <h2>Receitas em destaque</h2>
+
+            {/* cards de receitas */}
+
+            <Link href="">
+              Ver todas as receitas
+              <ChevronRight />
+            </Link>
+          </div>
         </section>
     </main>
   );
