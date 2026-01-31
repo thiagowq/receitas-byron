@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import {
     Dialog,
     DialogHeader,
@@ -11,10 +11,23 @@ import {
     recipeSchema,
 } from "@/lib/formValidationSchemas/recipeSchema";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Recipe } from "@/lib/data";
 
 interface RecipeFormModalProps {
     isOpen: boolean;
     onClose: () => void;
+}
+
+const DEFAULT_VALUES: RecipeFormData = {
+    title: "",
+    category: "",
+    descrition: "",
+    imageURL: "",
+    prepTime: "",
+    cookTime: "",
+    servings: 1,
+    ingredients: [{value: ""}],
+    instructions: [{value: ""}]
 }
 
 export default function RecipeFormModal({
@@ -26,10 +39,30 @@ export default function RecipeFormModal({
         reset,
         handleSubmit,
         formState: { errors },
+        control
     } = useForm<RecipeFormData>({
         resolver: yupResolver(recipeSchema),
         mode: "onSubmit",
+        defaultValues: DEFAULT_VALUES
     });
+
+    const {
+        fields: ingredientFields,
+        append: appendIngredients,
+        remove: removeIngredients
+    } = useFieldArray({
+        control,
+        name: "ingredients"
+    })
+
+    const {
+        fields: instructionsFields,
+        append: appendInstructions,
+        remove: removeInstructions
+    } = useFieldArray({
+        control,
+        name: "instructions"
+    })
 
     const onSubmit = (data: RecipeFormData) => {
         console.log(data);
@@ -41,7 +74,7 @@ export default function RecipeFormModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-white">
+            <DialogContent className="bg-white min-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Nova receita</DialogTitle>
                 </DialogHeader>
@@ -174,45 +207,58 @@ export default function RecipeFormModal({
                         <label htmlFor="ingredients">ingredientes</label>
                         <div className="flex flex-col gap-1">
                             {/* Conteudo */}
-                            <div className="flex gap-2 w-full">
-                                <input id="ingredients" type="text" className={inputStyle} />
-                                <button
-                                    type="button"
-                                    className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium"
-                                >
-                                    Remover
-                                </button>
-                            </div>
+                            {ingredientFields.map((field, index) => (
+                                <div key={field.id} className="flex gap-2 w-full">
+                                    <input id="ingredients" type="text" className={inputStyle} {...register(`ingredients.${index}.value`)} 
+                                    placeholder="Digite um ingrediente"/>
+                                    {ingredientFields.length > 1 &&
+                                        <button
+                                            type="button"
+                                            className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium"
+                                            onClick={() => removeIngredients(index)}
+                                        >
+                                            Remover
+                                        </button>}
+                                </div>
+                            ))}
 
                             <button
                                 type="button"
                                 className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium w-fit"
+                                onClick={() => appendIngredients({value: ""})}
                             >
                                 Adicionar ingrediente
                             </button>
                         </div>
                     </div>
 
-                    {/* Instruções */}
+                    {/* Lista de Instruções */}
                     <div className="flex flex-col gap-1">
                         <label htmlFor="instructions">Instruções</label>
                         <div className="flex flex-col gap-1">
                             {/* Conteudo */}
-                            <div className="flex gap-2 w-full">
-                                <textarea id="instructions" className={inputStyle} />
-                                <button
-                                    type="button"
-                                    className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium h-fit"
-                                >
-                                    Remover
-                                </button>
-                            </div>
+                            {instructionsFields.map((field, index) => (
+                                <div key={field.id} className="flex gap-2 w-full">
+                                    <textarea id="instructions" className={inputStyle}
+                                    placeholder="Digite uma instrução"
+                                    {...register(`instructions.${index}.value`)} />
+                                    {instructionsFields.length > 1 &&
+                                        <button
+                                            type="button"
+                                            className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium h-fit"
+                                            onClick={() => removeInstructions(index)}
+                                        >
+                                            Remover
+                                        </button>}
+                                </div>
+                            ))}
 
                             <button
                                 type="button"
                                 className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium w-fit"
+                                onClick={() => appendInstructions({value: ""})}
                             >
-                                Adicionar Instrução
+                                Adicionar ingrediente
                             </button>
                         </div>
                     </div>
