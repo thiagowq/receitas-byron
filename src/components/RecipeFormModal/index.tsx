@@ -16,13 +16,14 @@ import { Recipe } from "@/lib/data";
 interface RecipeFormModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSave: (recipe: Omit<Recipe, "id">) => void;
 }
 
 const DEFAULT_VALUES: RecipeFormData = {
     title: "",
     category: "",
     descrition: "",
-    imageURL: "",
+    image: "",
     prepTime: "",
     cookTime: "",
     servings: 1,
@@ -33,6 +34,7 @@ const DEFAULT_VALUES: RecipeFormData = {
 export default function RecipeFormModal({
     isOpen,
     onClose,
+    onSave
 }: RecipeFormModalProps) {
     const {
         register,
@@ -67,12 +69,14 @@ export default function RecipeFormModal({
     const onSubmit = (data: RecipeFormData) => {
         const recipeData = {
             ...data,
+            description: data.descrition,
             ingredients: data.ingredients.map((ingredient) => ingredient.value),
             instructions: data.instructions.map((instruction) => instruction.value),
 
         }
 
         console.log(data);
+        onSave(recipeData);
         reset();
         onClose();
     };
@@ -147,11 +151,11 @@ export default function RecipeFormModal({
                             className={inputStyle}
                             id="imageUrl"
                             placeholder="/placeholder.svg"
-                            {...register("imageURL")}
+                            {...register("image")}
                         />
-                        {errors.imageURL && (
+                        {errors.image && (
                             <span className="text-sm text-red-500">
-                                {errors.imageURL.message}
+                                {errors.image.message}
                             </span>
                         )}
                     </div>
