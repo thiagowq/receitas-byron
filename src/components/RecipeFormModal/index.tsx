@@ -12,17 +12,21 @@ import {
 } from "@/lib/formValidationSchemas/recipeSchema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Recipe } from "@/lib/data";
+import { useEffect } from "react";
 
 interface RecipeFormModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSave: (recipe: Omit<Recipe, "id"> | Recipe) => void;
+    mode: "create" | "edit",
+    recipe?: Recipe
 }
 
 const DEFAULT_VALUES: RecipeFormData = {
     title: "",
     category: "",
     descrition: "",
-    imageURL: "",
+    image: "",
     prepTime: "",
     cookTime: "",
     servings: 1,
@@ -33,6 +37,9 @@ const DEFAULT_VALUES: RecipeFormData = {
 export default function RecipeFormModal({
     isOpen,
     onClose,
+    onSave,
+    mode,
+    recipe
 }: RecipeFormModalProps) {
     const {
         register,
@@ -62,17 +69,33 @@ export default function RecipeFormModal({
     } = useFieldArray({
         control,
         name: "instructions"
-    })
+    });
+
+    useEffect(() => {
+        if (isOpen) {
+            if (mode === "edit" && recipe) {
+                reset({
+                    ...recipe,
+                    ingredients: recipe.ingredients.map((ing) => ({value: ing})),
+                    instructions: recipe.ingredients.map((inst) => ({value: inst})),
+                })
+            } else {
+                reset(DEFAULT_VALUES)
+            }
+        }
+    }, [mode, isOpen, recipe, reset])
 
     const onSubmit = (data: RecipeFormData) => {
         const recipeData = {
             ...data,
+            description: data.descrition,
             ingredients: data.ingredients.map((ingredient) => ingredient.value),
             instructions: data.instructions.map((instruction) => instruction.value),
 
         }
 
         console.log(data);
+        onSave(mode === "edit" && recipe ? {...recipeData, id: recipe.id } : recipeData);
         reset();
         onClose();
     };
@@ -81,220 +104,211 @@ export default function RecipeFormModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-white min-w-2xl max-h-[90dvh] overflow-y-scroll">
-                <DialogHeader>
-                    <DialogTitle>Nova receita</DialogTitle>
+            <DialogContent className="bg-white min-w-2xl max-h-[90dvh] p-0">
+                <DialogHeader className="p-6 pb-0">
+                    <DialogTitle>{mode === "create" ? "Nova receita" : "Editar Receita"}</DialogTitle>
                 </DialogHeader>
 
-                <form
-                    onSubmit={handleSubmit(onSubmit)}
-                    className="flex flex-col gap-4 w-full"
-                >
-                    <div className="grid grid-cols-2">
-                        {/* Título */}
+                <div className="max-h-[75dvh] overflow-y-auto p-6">
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="flex flex-col gap-4 w-full"
+                    >
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Título */}
+                            <div className="flex flex-col gap-1">
+                                <label htmlFor="title">Título</label>
+                                <input
+                                    className={inputStyle}
+                                    type="text"
+                                    id="title"
+                                    {...register("title")}
+                                />
+                                {errors.title && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.title.message}
+                                    </span>
+                                )}
+                            </div>
+                            {/* Categoria */}
+                            <div className="flex flex-col gap-1">
+                                <label htmlFor="category">Categoria</label>
+                                <input
+                                    className={inputStyle}
+                                    type="text"
+                                    id="title"
+                                    {...register("category")}
+                                />
+                                {errors.category && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.category.message}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        {/* Descrição */}
                         <div className="flex flex-col gap-1">
-                            <label htmlFor="title">Título</label>
-                            <input
+                            <label htmlFor="description">Descrição</label>
+                            <textarea
                                 className={inputStyle}
-                                type="text"
-                                id="title"
-                                {...register("title")}
+                                id="description"
+                                {...register("descrition")}
                             />
-                            {errors.title && (
+                            {errors.descrition && (
                                 <span className="text-sm text-red-500">
-                                    {errors.title.message}
+                                    {errors.descrition.message}
                                 </span>
                             )}
                         </div>
-
-                        {/* Categoria */}
+                        {/* URL da imagem */}
                         <div className="flex flex-col gap-1">
-                            <label htmlFor="category">Categoria</label>
-                            <input
+                            <label htmlFor="imageUrl">URL da imagem</label>
+                            <textarea
+                                typeof="text"
                                 className={inputStyle}
-                                type="text"
-                                id="title"
-                                {...register("category")}
+                                id="imageUrl"
+                                placeholder="/placeholder.svg"
+                                {...register("image")}
                             />
-                            {errors.category && (
+                            {errors.image && (
                                 <span className="text-sm text-red-500">
-                                    {errors.category.message}
+                                    {errors.image.message}
                                 </span>
                             )}
                         </div>
-                    </div>
-
-                    {/* Descrição */}
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="description">Descrição</label>
-                        <textarea
-                            className={inputStyle}
-                            id="description"
-                            {...register("descrition")}
-                        />
-                        {errors.descrition && (
-                            <span className="text-sm text-red-500">
-                                {errors.descrition.message}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* URL da imagem */}
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="imageUrl">URL da imagem</label>
-                        <textarea
-                            typeof="text"
-                            className={inputStyle}
-                            id="imageUrl"
-                            placeholder="/placeholder.svg"
-                            {...register("imageURL")}
-                        />
-                        {errors.imageURL && (
-                            <span className="text-sm text-red-500">
-                                {errors.imageURL.message}
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2">
-                        {/* Tempo de praparo */}
-                        <div className="flex flex-col gap-1">
-                            <label htmlFor="prepTime">Tempo de preparo</label>
-                            <input
-                                className={inputStyle}
-                                type="text"
-                                id="prepTime"
-                                placeholder="15 minutos"
-                                {...register("prepTime")}
-                            />
-                            {errors.prepTime && (
-                                <span className="text-sm text-red-500">
-                                    {errors.prepTime.message}
-                                </span>
-                            )}
+                        <div className="grid grid-cols-3 gap-2">
+                            {/* Tempo de praparo */}
+                            <div className="flex flex-col gap-1">
+                                <label htmlFor="prepTime">Tempo de preparo</label>
+                                <input
+                                    className={inputStyle}
+                                    type="text"
+                                    id="prepTime"
+                                    placeholder="15 minutos"
+                                    {...register("prepTime")}
+                                />
+                                {errors.prepTime && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.prepTime.message}
+                                    </span>
+                                )}
+                            </div>
+                            {/* Tempo de cozimento */}
+                            <div className="flex flex-col gap-1">
+                                <label htmlFor="cookTime">Tempo de cozimento</label>
+                                <input
+                                    className={inputStyle}
+                                    type="text"
+                                    id="cookTime"
+                                    placeholder="30 minutos"
+                                    {...register("cookTime")}
+                                />
+                                {errors.cookTime && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.cookTime.message}
+                                    </span>
+                                )}
+                            </div>
+                            {/* Porções */}
+                            <div className="flex flex-col gap-1">
+                                <label htmlFor="servings">Porções</label>
+                                <input
+                                    className={inputStyle}
+                                    type="number"
+                                    id="servings"
+                                    defaultValue={1}
+                                    {...register("servings")}
+                                />
+                                {errors.servings && (
+                                    <span className="text-sm text-red-500">
+                                        {errors.servings.message}
+                                    </span>
+                                )}
+                            </div>
                         </div>
-
-                        {/* Tempo de cozimento */}
+                        {/* Lista de ingredientes */}
                         <div className="flex flex-col gap-1">
-                            <label htmlFor="cookTime">Tempo de cozimento</label>
-                            <input
-                                className={inputStyle}
-                                type="text"
-                                id="cookTime"
-                                placeholder="30 minutos"
-                                {...register("cookTime")}
-                            />
-                            {errors.cookTime && (
-                                <span className="text-sm text-red-500">
-                                    {errors.cookTime.message}
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Porções */}
-                        <div className="flex flex-col gap-1">
-                            <label htmlFor="servings">Porções</label>
-                            <input
-                                className={inputStyle}
-                                type="number"
-                                id="servings"
-                                defaultValue={1}
-                                {...register("servings")}
-                            />
-                            {errors.servings && (
-                                <span className="text-sm text-red-500">
-                                    {errors.servings.message}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Lista de ingredientes */}
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="ingredients">ingredientes</label>
-                        <div className="flex flex-col gap-1">
-                            {/* Conteudo */}
-                            {ingredientFields.map((field, index) => (
-                                <div key={field.id} className="flex gap-2 w-full">
-                                    <div className="flex-grow">
-                                        <input id="ingredients" type="text" className={inputStyle} {...register(`ingredients.${index}.value`)}
-                                        placeholder="Digite um ingrediente"
-                                        {...register(`ingredients.${index}.value`)}
-                                        />
-                                        { errors.ingredients?.[index]?.value && <span className="text-sm text-red-500">{errors.ingredients?.[index].value.message}</span> }
+                            <label htmlFor="ingredients">ingredientes</label>
+                            <div className="flex flex-col gap-1">
+                                {/* Conteudo */}
+                                {ingredientFields.map((field, index) => (
+                                    <div key={field.id} className="flex gap-2 w-full">
+                                        <div className="flex-grow">
+                                            <input id="ingredients" type="text" className={inputStyle} {...register(`ingredients.${index}.value`)}
+                                            placeholder="Digite um ingrediente"
+                                            {...register(`ingredients.${index}.value`)}
+                                            />
+                                            { errors.ingredients?.[index]?.value && <span className="text-sm text-red-500">{errors.ingredients?.[index].value.message}</span> }
+                                        </div>
+                                        {ingredientFields.length > 1 &&
+                                            <button
+                                                type="button"
+                                                className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium"
+                                                onClick={() => removeIngredients(index)}
+                                            >
+                                                Remover
+                                            </button>}
                                     </div>
-                                    {ingredientFields.length > 1 &&
-                                        <button
-                                            type="button"
-                                            className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium"
-                                            onClick={() => removeIngredients(index)}
-                                        >
-                                            Remover
-                                        </button>}
-                                </div>
-                            ))}
-
+                                ))}
+                                <button
+                                    type="button"
+                                    className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium w-fit"
+                                    onClick={() => appendIngredients({value: ""})}
+                                >
+                                    Adicionar ingrediente
+                                </button>
+                            </div>
+                        </div>
+                        {/* Lista de Instruções */}
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="instructions">Instruções</label>
+                            <div className="flex flex-col gap-1">
+                                {/* Conteudo */}
+                                {instructionsFields.map((field, index) => (
+                                    <div key={field.id} className="flex gap-2 w-full">
+                                        <div className="flex-grow">
+                                            <textarea id="instructions" className={inputStyle}
+                                            placeholder="Digite uma instrução"
+                                            {...register(`instructions.${index}.value`)}
+                                            />
+                                            { errors.instructions?.[index]?.value && <span className="text-sm text-red-500">{errors.instructions?.[index].value.message}</span> }
+                                        </div>
+                                        {instructionsFields.length > 1 &&
+                                            <button
+                                                type="button"
+                                                className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium h-fit"
+                                                onClick={() => removeInstructions(index)}
+                                            >
+                                                Remover
+                                            </button>}
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium w-fit"
+                                    onClick={() => appendInstructions({value: ""})}
+                                >
+                                    Adicionar ingrediente
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 self-end">
                             <button
                                 type="button"
-                                className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium w-fit"
-                                onClick={() => appendIngredients({value: ""})}
+                                onClick={onClose}
+                                className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium"
                             >
-                                Adicionar ingrediente
+                                Cancelar
                             </button>
-                        </div>
-                    </div>
-
-                    {/* Lista de Instruções */}
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="instructions">Instruções</label>
-                        <div className="flex flex-col gap-1">
-                            {/* Conteudo */}
-                            {instructionsFields.map((field, index) => (
-                                <div key={field.id} className="flex gap-2 w-full">
-                                    <div className="flex-grow">
-                                        <textarea id="instructions" className={inputStyle}
-                                        placeholder="Digite uma instrução"
-                                        {...register(`instructions.${index}.value`)}
-                                        />
-                                        { errors.instructions?.[index]?.value && <span className="text-sm text-red-500">{errors.instructions?.[index].value.message}</span> }
-                                    </div>
-                                    {instructionsFields.length > 1 &&
-                                        <button
-                                            type="button"
-                                            className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium h-fit"
-                                            onClick={() => removeInstructions(index)}
-                                        >
-                                            Remover
-                                        </button>}
-                                </div>
-                            ))}
-
                             <button
-                                type="button"
-                                className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium w-fit"
-                                onClick={() => appendInstructions({value: ""})}
+                                type="submit"
+                                className="bg-black rounded-md text-white hover:bg-gray-800 transition-colors px-4 py-2 font-medium"
                             >
-                                Adicionar ingrediente
+                                {mode === "create" ? "Criar receita" : "Salvar Alterações"}
                             </button>
                         </div>
-                    </div>
-
-                    <div className="flex gap-2 self-end">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="bg-white border border-zinc-300 rounded-md hover:bg-gray-100 transition-colors px-4 py-2 font-medium"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="bg-black rounded-md text-white hover:bg-gray-800 transition-colors px-4 py-2 font-medium"
-                        >
-                            Criar receita
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </DialogContent>
         </Dialog>
     );
