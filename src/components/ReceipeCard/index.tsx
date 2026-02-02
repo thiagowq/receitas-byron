@@ -1,3 +1,5 @@
+"use client"
+
 import { Recipe } from "@/lib/data";
 import { Edit, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -5,15 +7,17 @@ import Link from "next/link";
 
 interface ReceipeCardProps{
     recipe: Recipe
+    onEdit: () => void
 }
 
-export default function RecipeCard({ recipe }: ReceipeCardProps) {
+export default function RecipeCard({ recipe, onEdit }: ReceipeCardProps) {
     const handleEdit = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.stopPropagation();
+        e.preventDefault();
+        onEdit();
     }
 
     const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.stopPropagation();
+        e.preventDefault();
     }
 
     return (
