@@ -6,9 +6,12 @@ import { recipes as initialRecipes } from "@/lib/data";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import type { Recipe } from "@/lib/data";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
 export default function ReceitasPage() {
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
+  const [isDeleteConfirmationModalOpen, setIsDeleteConfirmationModalOpen] =
+    useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
   const [modalNode, setModalNode] = useState<"create" | "edit">("create");
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | undefined>(
@@ -49,6 +52,22 @@ export default function ReceitasPage() {
     }
   };
 
+  const handleOpenDeleteModalConfirmationModal = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    setIsDeleteConfirmationModalOpen(true);
+  };
+
+  const handleDeleteRecipe = () => {
+    if (selectedRecipe) {
+      setRecipes((prev) =>
+        prev.filter((recipe) => recipe.id !== selectedRecipe.id),
+      );
+
+      setIsDeleteConfirmationModalOpen(false);
+      setSelectedRecipe(undefined);
+    }
+  };
+
   return (
     <main className="flex-grow py-8">
       <div className="container mx-auto">
@@ -56,7 +75,7 @@ export default function ReceitasPage() {
           <h1 className="text-3xl font-bold">Todas as receitas</h1>
 
           <button
-            onClick={(handleOpenCreateModal)}
+            onClick={handleOpenCreateModal}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border text-white bg-black hover:bg-gray-800 transition-colors"
           >
             <Plus size={16} />
@@ -70,6 +89,7 @@ export default function ReceitasPage() {
               key={recipe.id}
               recipe={recipe}
               onEdit={() => handleOpenEditModal(recipe)}
+              onDelete={() => handleOpenDeleteModalConfirmationModal(recipe)}
             />
           ))}
         </div>
@@ -80,6 +100,13 @@ export default function ReceitasPage() {
         onClose={handleCloseModal}
         onSave={handleSaveRecipe}
         mode={modalNode}
+        recipe={selectedRecipe}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteConfirmationModalOpen}
+        onClose={() => setIsDeleteConfirmationModalOpen(false)}
+        onConfirm={handleDeleteRecipe}
         recipe={selectedRecipe}
       />
     </main>
